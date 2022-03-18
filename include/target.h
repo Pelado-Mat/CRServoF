@@ -5,7 +5,8 @@
     #define LED_INVERTED    1
     #define APIN_VBAT       A0
     #define USART_INPUT     USART2  // UART2 RX=PA3 TX=PA2
-    #define OUTPUT_PIN_MAP  PA_15, PB_3, PB_10, PB_11, PA_6, PA_7, PB_0, PB_1 // TIM2 CH1-4, TIM3CH1-4
+///    #define OUTPUT_PIN_MAP  PB_5, PB_4, PB_3, PA_15, PA_12, PA_11, PA_10, PA_9 // TIM2 CH1-4, TIM3CH1-4
+    #define OUTPUT_PIN_MAP  PB_5, PB_4, PB_3, PA_15
 
 #elif defined(TARGET_CC3D)
     #define DPIN_LED        PB_3
@@ -29,6 +30,6 @@
 
 #if !defined(VBAT_R1) || !defined(VBAT_R2)
     // Resistor divider used on VBAT input, R1+R2 must be less than 3178
-    #define VBAT_R1         820
-    #define VBAT_R2         120
+    #define VBAT_R1         680
+    #define VBAT_R2         100
 #endif

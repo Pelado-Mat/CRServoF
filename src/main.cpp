@@ -3,16 +3,18 @@
 #include <median.h>
 #include "target.h"
 
-#define NUM_OUTPUTS 8
+#define NUM_OUTPUTS 4
 
 // Configuration
 // Map input CRSF channels (1-based, up to 16 for CRSF, 12 for ELRS) to outputs 1-8
 // use a negative number to invert the signal (i.e. +100% becomes -100%)
-constexpr int OUTPUT_MAP[NUM_OUTPUTS] = { 1, 2, 3, 4, 6, 7, 8, 12 };
+//constexpr int OUTPUT_MAP[NUM_OUTPUTS] = { 1, 2, 3, 4, 6, 7, 8, 12 };
+constexpr int OUTPUT_MAP[NUM_OUTPUTS] = { 1, 2, 3, 4};
 // The failsafe action for each channel (fsaNoPulses, fsaHold, or microseconds)
 constexpr int OUTPUT_FAILSAFE[NUM_OUTPUTS] = {
-    1500, 1500, 988, 1500,                  // ch1-ch4
-    fsaHold, fsaHold, fsaHold, fsaNoPulses  // ch5-ch8
+    1500, 1500, 1500, 1500                  // ch1-ch4
+   // 1500, 1500, 988, 1500,                  // ch1-ch4
+   // fsaHold, fsaHold, fsaHold, fsaNoPulses  // ch5-ch8
     };
 // Define the pins used to output servo PWM, must use hardware PWM,
 // and change HardwareTimer targets below if the timers change
@@ -22,7 +24,7 @@ constexpr PinName OUTPUT_PINS[NUM_OUTPUTS] = { OUTPUT_PIN_MAP };
 #define VBAT_INTERVAL   500
 #define VBAT_SMOOTH     5
 // Scale used to calibrate or change to CRSF standard 0.1 scale
-#define VBAT_SCALE      1.0
+#define VBAT_SCALE      0.1
 
 // Local Variables
 static HardwareSerial CrsfSerialStream(USART_INPUT);
@@ -64,8 +66,23 @@ static void servoSetUs(unsigned int servo, int usec)
     g_OutputsUs[servo] = usec;
 }
 
+static void failSafe()
+{
+    // Perform the failsafe action
+    for (unsigned int out=0; out<NUM_OUTPUTS; ++out)
+    {
+        if (OUTPUT_FAILSAFE[out] == fsaNoPulses)
+            servoSetUs(out, 0);
+        else if (OUTPUT_FAILSAFE[out] != fsaHold)
+            servoSetUs(out, OUTPUT_FAILSAFE[out]);
+        // else fsaHold does nothing, keep the same value
+    }
+}
+
 static void packetChannels()
 {
+    if (crsf.getChannel(5) > 1900) // ARM is High!
+    {
     for (unsigned int out=0; out<NUM_OUTPUTS; ++out)
     {
         const int chInput = OUTPUT_MAP[out];
@@ -81,7 +98,11 @@ static void packetChannels()
         }
         servoSetUs(out, usOutput);
     }
-
+    }
+    else
+    {
+	failSafe();
+    }
     // for (unsigned int ch=0; ch<4; ++ch)
     // {
     //     Serial.write(ch < 10 ? '0' + ch : 'A' + ch - 10);
@@ -103,20 +124,12 @@ static void crsfLinkUp()
     digitalWrite(DPIN_LED, HIGH ^ LED_INVERTED);
 }
 
+
 static void crsfLinkDown()
 {
     digitalWrite(DPIN_LED, LOW ^ LED_INVERTED);
-
-    // Perform the failsafe action
-    for (unsigned int out=0; out<NUM_OUTPUTS; ++out)
-    {
-        if (OUTPUT_FAILSAFE[out] == fsaNoPulses)
-            servoSetUs(out, 0);
-        else if (OUTPUT_FAILSAFE[out] != fsaHold)
-            servoSetUs(out, OUTPUT_FAILSAFE[out]);
-        // else fsaHold does nothing, keep the same value
-    }
- }
+    failSafe();
+}
 
 static void checkVbatt()
 {
@@ -137,8 +150,8 @@ static void checkVbatt()
     crsfbatt.voltage = htobe16(scaledVoltage);
     crsf.queuePacket(CRSF_SYNC_BYTE, CRSF_FRAMETYPE_BATTERY_SENSOR, &crsfbatt, sizeof(crsfbatt));
 
-    //Serial.print("ADC="); Serial.print(adc, DEC);
-    //Serial.print(" "); Serial.print(g_State.vbatValue, DEC); Serial.println("V");
+//    Serial.print("ADC="); Serial.print(adc, DEC);
+//    Serial.print(" "); Serial.print(g_State.vbatValue, DEC); Serial.println("V");
 }
 
 static bool handleSerialCommand(char *cmd)
