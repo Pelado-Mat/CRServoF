@@ -2,6 +2,8 @@
 
 #if defined(TARGET_BLUEPILL)
     #define DPIN_LED        LED_BUILTIN
+    #define DPIN_BUZ	    PB_12        
+    #define DPIN_REL	    PB_13
     #define LED_INVERTED    1
     #define APIN_VBAT       A0
     #define USART_INPUT     USART2  // UART2 RX=PA3 TX=PA2
@@ -27,8 +29,12 @@
     #define LED_INVERTED    0
 #endif
 
+#if !defined(REL_INVERTED)
+    #define REL_INVERTED    0
+#endif
+
 #if !defined(VBAT_R1) || !defined(VBAT_R2)
     // Resistor divider used on VBAT input, R1+R2 must be less than 3178
-    #define VBAT_R1         820
-    #define VBAT_R2         120
+    #define VBAT_R1         2000 //820
+    #define VBAT_R2         200 //120
 #endif
