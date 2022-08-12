@@ -1,4 +1,14 @@
-## CRServoF - The CSRF serial protocol to PWM servo converter
+## CRServoF - The CSRF serial protocol to PWM servo converter + goodies- FPV noTankS edition
+
+Hacks to make my FPV No Tanks work better:
+- Use a 20k/2k voltage divider to get VBAT on the TX
+- Add a beeper on PB_12 controllable via a radio channel
+- Add a "relay" on PB_13 (actually a IRFZ44N mosfet) to control a 12v LED, switchable via the radio
+
+To use this branch just add an active beeper, an IRFZ44N mosfet and you are done.
+
+
+## Original info
 
 I wanted to create a small project to mess around with PWM servo output for ExpressLRS, and thought this might be of use for other people.
 
